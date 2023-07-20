@@ -1,0 +1,42 @@
+name: Trigger auto deployment for antpsmidjuly
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ testbranch ]
+    paths:
+    - '**'
+    - '.github/workflows/antpsmidjuly-AutoDeployTrigger-ae9fe156-efbc-47a0-8375-96efd84af53a.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ANTPSMIDJULY_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: antuxtest.azurecr.io
+          registryUsername: ${{ secrets.ANTPSMIDJULY_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.ANTPSMIDJULY_REGISTRY_PASSWORD }}
+          containerAppName: antpsmidjuly
+          resourceGroup: antpsjune
+          imageToBuild: antuxtest.azurecr.io/antpsmidjuly:${{ github.sha }}
+          
+
+     
+
