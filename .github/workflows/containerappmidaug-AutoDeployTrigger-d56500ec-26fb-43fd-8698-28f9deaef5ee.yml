@@ -1,0 +1,42 @@
+name: Trigger auto deployment for containerappmidaug
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ testbranch ]
+    paths:
+    - '**'
+    - '.github/workflows/containerappmidaug-AutoDeployTrigger-d56500ec-26fb-43fd-8698-28f9deaef5ee.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.CONTAINERAPPMIDAUG_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: taskstrackeracr1.azurecr.io
+          registryUsername: ${{ secrets.CONTAINERAPPMIDAUG_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPMIDAUG_REGISTRY_PASSWORD }}
+          containerAppName: containerappmidaug
+          resourceGroup: test_RG_AUG
+          imageToBuild: taskstrackeracr1.azurecr.io/containerappmidaug:${{ github.sha }}
+          
+
+     
+
